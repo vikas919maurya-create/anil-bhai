@@ -1,0 +1,1689 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+	<title>MONK MINER × HYDRO PROTECTOR — v1.0</title>
+	<style>
+		* { box-sizing:border-box; margin:0; padding:0; }
+		body { font-family: 'Rajdhani','Orbitron',sans-serif; }
+		:root{
+			--gold:#FFD700; --gold-dark:#B8860B; --gold-light:#FFE55C;
+			--red-blood:#8B0000; --red-bright:#CC0000; --red-glow:#FF2020;
+			--panel-border:#1e2a3a; --card-bg:#111827;
+			--text-dim:#7a8a9a; --green-ok:#00e676; --orange-fault:#ff6d00;
+		}
+		@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap');
+		.dashboard{ background:#060810; min-height:100vh; color:#e0e8f0; font-family:'Rajdhani',sans-serif; }
+		.header{
+			background:linear-gradient(180deg,#0a0e18 0%,#060810 100%);
+			border-bottom:2px solid #1a2535;
+			padding:18px 20px 14px;
+			text-align:center;
+			position:relative;
+			overflow:hidden;
+		}
+		.header::before{
+			content:'';
+			position:absolute;
+			top:0; left:0; right:0;
+			height:2px;
+			background:linear-gradient(90deg,transparent,var(--gold),transparent);
+		}
+		.header-title{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
+		.title-gold{
+			font-family:'Orbitron',sans-serif;
+			font-size:clamp(14px,3.5vw,22px);
+			font-weight:900;
+			background:linear-gradient(135deg,#B8860B 0%,#FFD700 40%,#FFE55C 60%,#B8860B 100%);
+			-webkit-background-clip:text;
+			-webkit-text-fill-color:transparent;
+			background-clip:text;
+			letter-spacing:2px;
+			filter:drop-shadow(0 0 8px rgba(255,215,0,.5));
+			transform:perspective(200px) rotateX(5deg);
+		}
+		.title-red{
+			font-family:'Orbitron',sans-serif;
+			font-size:clamp(16px,4vw,26px);
+			font-weight:900;
+			background:linear-gradient(135deg,#4a0000 0%,#8B0000 30%,#CC0000 55%,#FF2020 70%,#8B0000 100%);
+			-webkit-background-clip:text;
+			-webkit-text-fill-color:transparent;
+			background-clip:text;
+			filter:drop-shadow(0 0 10px rgba(204,0,0,.7));
+			transform:perspective(200px) rotateX(5deg);
+			letter-spacing:3px;
+		}
+		.header-sub{
+			font-size:14px;
+			color:var(--text-dim);
+			letter-spacing:4px;
+			text-transform:uppercase;
+			margin-top:4px;
+		}
+		.main-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:12px; }
+		@media(max-width:600px){ .main-grid{ grid-template-columns:1fr; } }
+		.panel-full{ grid-column:1 / -1; }
+		.panel{
+			background:var(--card-bg);
+			border:1px solid var(--panel-border);
+			border-radius:12px;
+			padding:14px;
+			position:relative;
+			overflow:hidden;
+		}
+		.panel::before{
+			content:'';
+			position:absolute;
+			top:0; left:0; right:0;
+			height:1px;
+			background:linear-gradient(90deg,transparent,var(--gold),transparent);
+			opacity:.4;
+		}
+		.panel-title{
+			font-family:'Orbitron',sans-serif;
+			font-size:14px;
+			letter-spacing:3px;
+			color:var(--gold-dark);
+			text-transform:uppercase;
+			margin-bottom:12px;
+			display:flex;
+			align-items:center;
+			gap:6px;
+		}
+		.panel-title::after{
+			content:'';
+			flex:1;
+			height:1px;
+			background:linear-gradient(90deg,var(--gold-dark),transparent);
+			opacity:.4;
+		}
+		.circle-container{ display:flex; flex-direction:column; align-items:center; justify-content:center; }
+		.pressure-ring{ position:relative; width:140px; height:140px; }
+		.pressure-ring svg{ transform:rotate(-90deg); position:absolute; top:0; left:0; }
+		.pressure-inner{
+			position:absolute;
+			inset:12px;
+			border-radius:50%;
+			background:radial-gradient(circle at 40% 35%,#1a2535,#0a0e18);
+			border:1px solid #1e2a3a;
+			display:flex;
+			flex-direction:column;
+			align-items:center;
+			justify-content:center;
+		}
+		.pressure-value{ font-family:'Orbitron',sans-serif; font-size:30px; font-weight:700; color:var(--gold-light); line-height:1; }
+		.pressure-unit{ font-size:13px; color:var(--text-dim); letter-spacing:2px; margin-top:2px; }
+		.pressure-label{ font-size:15px; color:var(--gold-dark); margin-top:8px; letter-spacing:2px; text-transform:uppercase; }
+		.live-dot{
+			display:inline-block;
+			width:7px; height:7px;
+			border-radius:50%;
+			background:var(--green-ok);
+			margin-right:4px;
+			animation:blink 1s infinite;
+		}
+		@keyframes blink{ 0%,100%{opacity:1} 50%{opacity:.2} }
+
+		/* ESP MODE INDICATOR RING — modern SVG arc */
+		.esp-mode-ring{
+			width:140px; height:140px;
+			position:relative;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			transition:all .4s ease;
+			flex-shrink:0;
+			border-radius:50%;
+			overflow:hidden;
+		}
+		.esp-mode-ring .ring-svg{
+			position:absolute;
+			top:0; left:0;
+			width:140px; height:140px;
+			overflow:hidden;
+		}
+		.esp-mode-ring .ring-inner{
+			position:relative;
+			z-index:1;
+			display:flex;
+			flex-direction:column;
+			align-items:center;
+			justify-content:center;
+		}
+		.esp-running-text{
+			font-family:'Orbitron',sans-serif;
+			font-size:8px;
+			letter-spacing:2px;
+			text-transform:uppercase;
+			text-align:center;
+			line-height:1.5;
+			transition:color .4s;
+			color:var(--text-dim);
+		}
+		.esp-mode-ring.m1 .esp-running-text{ color:rgba(255,215,0,.8); }
+		.esp-mode-ring.m2 .esp-running-text{ color:rgba(255,215,0,.8); }
+		.esp-mode-ring.m3 .esp-running-text{ color:rgba(255,215,0,.8); }
+		.esp-mode-num{
+			font-family:'Orbitron',sans-serif;
+			font-size:44px;
+			font-weight:900;
+			line-height:1;
+			letter-spacing:-2px;
+			color:var(--gold-light);
+			transition:color .4s, text-shadow .4s;
+		}
+		.esp-mode-ring.m1 .esp-mode-num{ color:#FFD700; text-shadow:0 0 18px rgba(255,215,0,.7),0 0 40px rgba(255,215,0,.3); }
+		.esp-mode-ring.m2 .esp-mode-num{ color:#FFD700; text-shadow:0 0 18px rgba(255,215,0,.7),0 0 40px rgba(255,215,0,.3); }
+		.esp-mode-ring.m3 .esp-mode-num{ color:#FFD700; text-shadow:0 0 18px rgba(255,215,0,.7),0 0 40px rgba(255,215,0,.3); }
+		.esp-uptime{
+			font-family:'Orbitron',sans-serif;
+			font-size:12px;
+			letter-spacing:1px;
+			color:var(--text-dim);
+			margin-top:8px;
+			text-align:center;
+		}
+		.uptime-val{ color:var(--gold-light); }
+
+		/* STATUS RING — SVG arc style matching ESP mode ring */
+		.status-ring{
+			width:140px; height:140px;
+			position:relative;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			flex-shrink:0;
+			transition:all .4s ease;
+			border-radius:50%;
+			overflow:hidden;
+		}
+		.status-ring .ring-svg{
+			position:absolute;
+			top:0; left:0;
+			width:140px; height:140px;
+		}
+		.status-ring .ring-inner{
+			position:relative;
+			z-index:1;
+			display:flex;
+			flex-direction:column;
+			align-items:center;
+			justify-content:center;
+		}
+		.status-icon{
+			font-size:34px; margin-bottom:2px; transition:all .4s;
+			color:var(--green-ok);
+			text-shadow:0 0 10px rgba(0,230,118,.9), 0 0 22px rgba(0,230,118,.6);
+			animation: iconSpin 2s linear infinite;
+			display:inline-block;
+		}
+		@keyframes iconSpin{
+			0%   { transform:rotate(0deg); }
+			100% { transform:rotate(360deg); }
+		}
+		/* Sparkle ripple released to the edge of the circle every 2s */
+		.status-ring{ --spark-color: var(--green-ok); }
+		.esp-mode-ring{ --spark-color: var(--gold); }
+		#pressure-ring-wrap{ --spark-color: var(--green-ok); }
+		.status-ring .ring-inner::after,
+		.esp-mode-ring .ring-inner::after{
+			content:'';
+			position:absolute;
+			top:50%; left:50%;
+			width:10px; height:10px;
+			margin:-5px 0 0 -5px;
+			border-radius:50%;
+			background:var(--spark-color);
+			box-shadow:0 0 8px var(--spark-color);
+			opacity:0;
+			animation: sparkleRelease 2s ease-out infinite;
+			pointer-events:none;
+			z-index:0;
+		}
+		@keyframes sparkleRelease{
+			0%   { transform:scale(1);   opacity:.22; }
+			70%  { transform:scale(11);  opacity:.04; }
+			100% { transform:scale(13);  opacity:0; }
+		}
+		.status-text{
+			font-family:'Orbitron',sans-serif;
+			font-size:15px;
+			font-weight:700;
+			letter-spacing:2px;
+			color:var(--green-ok);
+			transition:color .4s, text-shadow .4s;
+			text-shadow:0 0 18px rgba(0,230,118,.7),0 0 40px rgba(0,230,118,.3);
+		}
+		.status-ring.fault .status-text{
+			color:#FF2020;
+			text-shadow:0 0 18px rgba(255,32,32,.8),0 0 40px rgba(255,32,32,.4);
+		}
+		.status-sub{ font-size:13px; color:var(--text-dim); margin-top:3px; letter-spacing:1px; }
+
+		/* MODE BUTTONS */
+		.mode-btns{ display:flex; gap:8px; flex-wrap:wrap; }
+		.mode-btn{
+			flex:1;
+			min-width:70px;
+			padding:10px 8px;
+			border-radius:8px;
+			border:1px solid #2a3a4a;
+			background:#0d1520;
+			color:var(--text-dim);
+			font-family:'Orbitron',sans-serif;
+			font-size:13px;
+			letter-spacing:2px;
+			cursor:pointer;
+			transition:all .2s;
+			text-align:center;
+			position:relative;
+			overflow:hidden;
+		}
+		.mode-btn.active{
+			border-color:var(--gold);
+			background:linear-gradient(180deg,#1a1500 0%,#0d0a00 100%);
+			color:var(--gold-light);
+			box-shadow:0 0 14px rgba(255,215,0,.2), inset 0 14px rgba(255,215,0,.05);
+		}
+		.mode-btn.esp-running{ /* still fully clickable */ }
+		.mode-num{ font-size:26px; font-weight:700; display:block; margin-bottom:2px; }
+		.mode-esp-badge{
+			display:none;
+			font-size:10px;
+			letter-spacing:1px;
+			color:var(--green-ok);
+			margin-top:2px;
+		}
+		.mode-btn.esp-running .mode-esp-badge{ display:block; }
+
+		.val-btn{
+			width:36px; height:36px;
+			border-radius:4px;
+			border:1px solid var(--gold-dark);
+			background:linear-gradient(180deg,#241b00 0%,#120e00 100%);
+			color:var(--gold);
+			font-size:18px;
+			font-weight:700;
+			cursor:pointer;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			transition:all .15s;
+			line-height:1;
+			padding:0;
+			box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
+			position:relative;
+			overflow:hidden;
+		}
+		.val-btn::after{
+			content:'';
+			position:absolute;
+			top:50%; left:50%;
+			width:6px; height:6px;
+			background:rgba(255,215,0,.55);
+			border-radius:50%;
+			transform:translate(-50%,-50%) scale(0);
+			opacity:0;
+			pointer-events:none;
+		}
+		.val-btn:active::after{
+			animation: btnRipple .45s ease-out;
+		}
+		@keyframes btnRipple{
+			0%   { transform:translate(-50%,-50%) scale(0);  opacity:.6; }
+			100% { transform:translate(-50%,-50%) scale(9);  opacity:0; }
+		}
+		.push-btn::after, .esp-btn::after, .mode-btn::after{
+			content:'';
+			position:absolute;
+			top:50%; left:50%;
+			width:6px; height:6px;
+			background:rgba(255,215,0,.55);
+			border-radius:50%;
+			transform:translate(-50%,-50%) scale(0);
+			opacity:0;
+			pointer-events:none;
+		}
+		.push-btn:active::after, .esp-btn:active::after, .mode-btn:active::after{
+			animation: btnRipple .45s ease-out;
+		}
+		.val-btn:hover{ border-color:var(--gold-light); background:linear-gradient(180deg,#332700 0%,#1a1400 100%); box-shadow:0 0 8px rgba(255,215,0,.25); }
+		.val-btn:active{ transform:scale(.94); }
+		.val-display{
+			width:52px;
+			text-align:center;
+			font-family:'Orbitron',sans-serif;
+			font-size:18px;
+			font-weight:700;
+			color:var(--gold-light);
+			background:#05070c;
+			border:1px solid #1a2230;
+			border-radius:4px;
+			padding:3px 0;
+		}
+		.value-selector{ display:flex; align-items:center; gap:6px; }
+		.num-input{
+			width:100%;
+			background:#0a0e18;
+			border:1px solid #2a3a4a;
+			border-radius:5px;
+			color:var(--gold-light);
+			font-family:'Orbitron',sans-serif;
+			font-size:16px;
+			padding:7px 8px;
+			text-align:center;
+			outline:none;
+			transition:border-color .2s;
+		}
+		.num-input:focus{ border-color:var(--gold); }
+		.restart-btn{
+			width:100%;
+			padding:10px;
+			border-radius:8px;
+			border:1px solid var(--red-blood);
+			background:linear-gradient(180deg,#1a0505 0%,#0a0202 100%);
+			color:var(--red-bright);
+			font-family:'Orbitron',sans-serif;
+			font-size:15px;
+			letter-spacing:3px;
+			cursor:pointer;
+			transition:all .2s;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			gap:8px;
+			position:relative;
+			overflow:hidden;
+			margin-top:4px;
+		}
+		.restart-btn:hover{
+			border-color:var(--red-bright);
+			box-shadow:0 0 14px rgba(204,0,0,.3);
+			color:var(--red-glow);
+		}
+		.restart-btn.firing{ animation:restart-flash .6s ease; }
+		@keyframes restart-flash{
+			0%{box-shadow:0 0 0 rgba(204,0,0,0)}
+			30%{box-shadow:0 0 30px rgba(204,0,0,.6), inset 0 0 20px rgba(204,0,0,.2)}
+			100%{box-shadow:0 0 0 rgba(204,0,0,0)}
+		}
+		.relay-row{
+			display:flex;
+			align-items:center;
+			justify-content:space-between;
+			padding:10px 12px;
+			border-radius:8px;
+			border:1px solid #1e2a3a;
+			background:#0a0e18;
+			margin-bottom:8px;
+			transition:all .25s;
+		}
+		.relay-row.relay-on{
+			border-color:var(--green-ok);
+			background:#071510;
+			box-shadow:0 0 12px rgba(0,230,118,.15);
+		}
+		.relay-name{
+			font-family:'Orbitron',sans-serif;
+			font-size:15px;
+			letter-spacing:2px;
+			color:var(--text-dim);
+			display:flex;
+			align-items:center;
+			gap:8px;
+		}
+		.relay-row.relay-on .relay-name{ color:var(--gold-light); }
+		.relay-dot{
+			width:10px; height:10px;
+			border-radius:50%;
+			background:#333;
+			transition:all .25s;
+			flex-shrink:0;
+		}
+		.relay-row.relay-on .relay-dot{
+			background:var(--green-ok);
+			box-shadow:0 0 6px var(--green-ok);
+			animation:blink .9s infinite;
+		}
+		.relay-state-txt{ font-family:'Orbitron',sans-serif; font-size:14px; letter-spacing:2px; }
+		.relay-row.relay-on .relay-state-txt{ color:var(--green-ok); }
+		.relay-row.relay-off .relay-state-txt{ color:#cc3300; }
+		.relay-timer{
+			display:none;
+			align-items:center;
+			gap:6px;
+			padding:3px 8px;
+			border-radius:999px;
+			font-family:'Orbitron',sans-serif;
+			font-size:13px;
+			letter-spacing:1px;
+			border:1px solid #2a3a4a;
+			background:#0a0e18;
+			line-height:1;
+		}
+		.relay-timer.show{ display:inline-flex; }
+		.relay-timer.on{
+			border-color:var(--green-ok);
+			color:var(--green-ok);
+			box-shadow:0 0 10px rgba(0,230,118,.18);
+		}
+		.relay-timer.off{
+			border-color:#cc3300;
+			color:#cc3300;
+			box-shadow:0 0 10px rgba(204,51,0,.18);
+		}
+		.toggle-wrap{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
+		.toggle{ position:relative; width:46px; height:24px; flex-shrink:0; }
+		.toggle input{ opacity:0; width:0; height:0; }
+		.toggle-slider{
+			position:absolute;
+			cursor:pointer;
+			inset:0;
+			background:#1e2a3a;
+			border-radius:24px;
+			transition:.3s;
+			border:1px solid #2a3a4a;
+		}
+		.toggle-slider::before{
+			content:'';
+			position:absolute;
+			height:18px; width:18px;
+			left:2px; bottom:2px;
+			background:#3a4a5a;
+			border-radius:50%;
+			transition:.3s;
+		}
+		.toggle input:checked + .toggle-slider{
+			background:#0d2015;
+			border-color:var(--green-ok);
+			box-shadow:0 0 8px rgba(0,230,118,.3);
+		}
+		.toggle input:checked + .toggle-slider::before{
+			transform:translateX(22px);
+			background:var(--green-ok);
+			box-shadow:0 0 6px var(--green-ok);
+		}
+		.section-divider{ height:1px; background:linear-gradient(90deg,transparent,#2a3a4a,transparent); margin:10px 0; }
+		.two-circles{ display:flex; gap:16px; align-items:center; justify-content:space-around; flex-wrap:wrap; }
+		.three-circles{ display:flex; gap:16px; align-items:center; justify-content:space-around; flex-wrap:wrap; }
+		.corner-deco{ position:absolute; width:14px; height:14px; border-color:var(--gold-dark); border-style:solid; opacity:.4; }
+		.corner-tl{ top:6px; left:6px; border-width:1px 0 0 1px; }
+		.corner-tr{ top:6px; right:6px; border-width:1px 1px 0 0; }
+		.corner-bl{ bottom:6px; left:6px; border-width:0 0 1px 1px; }
+		.corner-br{ bottom:6px; right:6px; border-width:0 1px 1px 0; }
+		.footer-bar{
+			display:flex;
+			justify-content:space-between;
+			align-items:center;
+			padding:8px 16px;
+			border-top:1px solid var(--panel-border);
+			background:#080a10;
+		}
+		.footer-text{ font-size:13px; color:var(--text-dim); letter-spacing:2px; }
+		.footer-live{ display:flex; align-items:center; gap:5px; font-size:13px; color:var(--green-ok); letter-spacing:2px; }
+		.contactor-card{ padding:12px; border-radius:10px; background:#0a0e18; }
+		.contactor-card .relay-row{ margin-bottom:10px; }
+		.contactor-card .relay-name{ flex:1; min-width:120px; }
+		@media(max-width:600px){
+			.contactor-card .relay-row{ flex-direction:column; align-items:flex-start; gap:8px; }
+			.contactor-card .toggle-wrap{ width:100%; justify-content:space-between; }
+			.contactor-card .relay-state-txt{ font-size:13px; }
+			.val-btn{ width:28px; height:28px; font-size:15px; }
+			.val-display{ width:36px; font-size:14px; padding:3px 0; }
+			.value-selector{ gap:4px; }
+			.timing-grid > div > div:first-child{ font-size:10px !important; letter-spacing:1px !important; white-space:normal; line-height:1.3; min-height:26px; }
+			.timing-grid > div > div:last-child{ font-size:10px !important; }
+			.timing-grid .val-display{ width:28px !important; font-size:12px !important; padding:3px 0 !important; }
+			.timing-grid .val-btn{ width:24px !important; height:24px !important; font-size:13px !important; }
+			.timing-grid .value-selector{ gap:3px !important; }
+			.timing-grid{ gap:4px !important; }
+
+			/* Keep all 3 status circles in one row on mobile — shrink circles + text, no scroll */
+			.three-circles{ flex-wrap:nowrap; gap:4px; justify-content:space-between; }
+			.three-circles .circle-container{ flex:1 1 0; min-width:0; }
+			.three-circles .esp-mode-ring,
+			.three-circles .esp-mode-ring .ring-svg,
+			.three-circles .status-ring,
+			.three-circles .status-ring .ring-svg{ width:76px !important; height:76px !important; }
+			.three-circles .esp-mode-num{ font-size:20px; }
+			.three-circles .esp-running-text{ font-size:5px; }
+			.three-circles #pressure-val{ font-size:16px !important; }
+			.three-circles .status-icon{ font-size:16px; }
+			.three-circles .status-text{ font-size:9px !important; }
+			.three-circles .pressure-label{ font-size:9px; letter-spacing:0.5px; }
+			.three-circles .esp-uptime{ font-size:8px; }
+			.three-circles #prs-live-txt,
+			.three-circles #prs-live-txt2{ font-size:5px !important; }
+			.three-circles .ring-inner div[style*="11px"]{ font-size:7px !important; }
+
+			.mode-btn{ min-width:0; padding:7px 4px; font-size:10px; letter-spacing:1px; }
+			.mode-num{ font-size:18px; margin-bottom:1px; }
+			.mode-esp-badge{ font-size:8px; }
+
+			.footer-bar{ flex-direction:column; gap:6px; text-align:center; padding:10px 16px; }
+			.footer-text{ font-size:11px; }
+			.footer-live{ font-size:11px; }
+
+			/* Relay Push cards — compress for mobile */
+			.relay-push-grid{ gap:6px !important; }
+			.contactor-card{ padding:8px; }
+			.contactor-card .val-display{ width:32px !important; font-size:13px !important; }
+			.contactor-card div[style*="font-size:13px"]{ font-size:10px !important; margin-bottom:4px !important; }
+			.contactor-card .value-selector{ margin-bottom:8px !important; }
+			.push-btn{ padding:8px 6px; font-size:12px; letter-spacing:1.5px; margin-bottom:8px; }
+			.push-status-box{ padding:5px 8px; font-size:9px; letter-spacing:0.5px; min-height:26px; gap:5px; }
+		}
+		/* ESP SYNC — stacked vertically: UPDATE on top, FETCH below */
+		.esp-sync-grid{ display:flex; flex-direction:column; gap:12px; }
+		.esp-card{ border-radius:10px; padding:12px; position:relative; overflow:hidden; }
+		.esp-card::before{ content:''; position:absolute; top:0; left:0; right:0; height:1px; opacity:.35; }
+		.esp-card.fetch{ border:1px solid #1a3a2a; background:#060f09; }
+		.esp-card.fetch::before{ background:linear-gradient(90deg,transparent,var(--green-ok),transparent); }
+		.esp-card.update{ border:1px solid #2a1f00; background:#090800; }
+		.esp-card.update::before{ background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+		.esp-card-title{ font-family:'Orbitron',sans-serif; font-size:13px; letter-spacing:3px; text-transform:uppercase; margin-bottom:10px; }
+		.esp-card.fetch .esp-card-title{ color:#2a8a4a; }
+		.esp-card.update .esp-card-title{ color:var(--gold-dark); }
+		.esp-btn{ width:100%; padding:10px 8px; border-radius:8px; font-family:'Orbitron',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:6px; position:relative; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,.4); }
+		.esp-btn.fetch{ border:1px solid #3fbf6f; background:linear-gradient(180deg,#1a4a2a 0%,#0d2916 100%); color:#baffd0; }
+		.esp-btn.fetch:hover{ border-color:#5fe88f; box-shadow:0 0 14px rgba(0,230,118,.35); }
+		.esp-btn.update{ border:1px solid var(--gold-light); background:linear-gradient(180deg,#4a3a00 0%,#2a2000 100%); color:#fff3c2; }
+		.esp-btn.update:hover{ border-color:var(--gold); box-shadow:0 0 14px rgba(255,215,0,.35); }
+		.esp-data-grid{ margin-top:10px; }
+		.esp-data-row{ display:grid; gap:6px; margin-bottom:6px; }
+		.esp-data-row.row-2{ grid-template-columns:1fr 1fr; }
+		.esp-data-row.row-3{ grid-template-columns:1fr 1fr 1fr; }
+		.esp-data-box{ padding:8px 6px; border-radius:8px; border:1px solid #1a3a2a; background:#040a06; text-align:center; }
+		.esp-data-label{ font-size:10px; color:#3a8a5a; letter-spacing:1px; margin-bottom:4px; text-transform:uppercase; font-weight:600; }
+		.esp-data-value{ font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700; color:var(--gold-light); }
+		.esp-data-unit{ font-size:10px; color:#3a8a5a; margin-top:2px; letter-spacing:1px; }
+		.upd-data-box{ padding:8px 6px; border-radius:8px; border:1px solid #3a2a00; background:#0a0700; text-align:center; }
+		.upd-data-label{ font-size:10px; color:#9a7a2a; letter-spacing:1px; margin-bottom:4px; text-transform:uppercase; font-weight:600; }
+		.upd-data-value{ font-family:'Orbitron',sans-serif; font-size:20px; font-weight:700; color:var(--gold-light); }
+		.upd-data-unit{ font-size:10px; color:#9a7a2a; margin-top:2px; letter-spacing:1px; }
+		.esp-status{ margin-top:8px; padding:7px 10px; border-radius:6px; border:1px solid #1e2a3a; background:#080a10; font-family:'Orbitron',sans-serif; font-size:13px; letter-spacing:1px; color:var(--text-dim); text-align:center; min-height:30px; display:flex; align-items:center; justify-content:center; transition:all .3s; }
+		.esp-preview-list{ margin-top:10px; font-size:13px; color:var(--text-dim); letter-spacing:1px; line-height:1.8; }
+		.esp-preview-item{ display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #1a2a3a; }
+		.esp-preview-item:last-child{ border-bottom:none; }
+		.esp-preview-value{ color:var(--gold-light); font-family:'Orbitron',sans-serif; }
+
+		/* CONTACTOR STATUS BADGES */
+		.contactor-status-badge{
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			gap:10px;
+			padding:10px 14px;
+			border-radius:8px;
+			border:1px solid #2a3a4a;
+			background:#0a0e18;
+			transition:all .3s;
+			margin-bottom:14px;
+		}
+		.contactor-status-badge.off{
+			border-color:#8B0000 !important;
+			background:#100505 !important;
+			box-shadow:0 0 10px rgba(204,0,0,.2);
+		}
+		.contactor-status-badge.off .cont-indicator{
+			background:#cc0000 !important;
+			box-shadow:0 0 6px #cc0000 !important;
+		}
+		.contactor-status-badge.off .cont-label{ color:#cc0000 !important; }
+		.contactor-status-badge.on{
+			border-color:var(--green-ok) !important;
+			background:#071510 !important;
+			box-shadow:0 0 10px rgba(0,230,118,.2);
+		}
+		.contactor-status-badge.on .cont-indicator{
+			background:var(--green-ok) !important;
+			box-shadow:0 0 6px var(--green-ok) !important;
+			animation:blink .9s infinite;
+		}
+		.contactor-status-badge.on .cont-label{ color:var(--green-ok) !important; }
+		.cont-indicator{ width:14px; height:14px; border-radius:50%; transition:all .3s; flex-shrink:0; }
+		.cont-label{ font-family:'Orbitron',sans-serif; font-size:15px; letter-spacing:3px; color:var(--text-dim); transition:color .3s; }
+		.cont-timer{ font-family:'Orbitron',sans-serif; font-size:15px; color:var(--text-dim); margin-left:auto; letter-spacing:1px; min-width:50px; text-align:right; }
+
+		/* PUSH BUTTONS */
+		.push-btn{
+			width:100%;
+			padding:11px 8px;
+			border-radius:8px;
+			border:1px solid var(--gold-dark);
+			background:linear-gradient(180deg,#1a1200 0%,#0a0800 100%);
+			color:var(--gold);
+			font-family:'Orbitron',sans-serif;
+			font-size:15px;
+			letter-spacing:3px;
+			cursor:pointer;
+			transition:all .2s;
+			display:flex;
+			align-items:center;
+			justify-content:center;
+			gap:8px;
+			position:relative;
+			overflow:hidden;
+			margin-bottom:10px;
+		}
+		.push-btn:hover{
+			border-color:var(--gold-light);
+			box-shadow:0 0 16px rgba(255,215,0,.3);
+			color:var(--gold-light);
+		}
+		.push-btn:active{ transform:scale(.97); }
+		.push-btn.firing{ animation:push-flash .5s ease; }
+		.push-btn:disabled{ opacity:.5; cursor:not-allowed; }
+		@keyframes push-flash{
+			0%{box-shadow:0 0 0 rgba(255,215,0,0)}
+			30%{box-shadow:0 0 28px rgba(255,215,0,.5),inset 0 0 16px rgba(255,215,0,.15)}
+			100%{box-shadow:0 0 0 rgba(255,215,0,0)}
+		}
+		.push-status-box{
+			display:flex;
+			align-items:center;
+			gap:8px;
+			padding:7px 10px;
+			border-radius:6px;
+			border:1px solid #1e2a3a;
+			background:#080a10;
+			font-family:'Orbitron',sans-serif;
+			font-size:13px;
+			letter-spacing:1px;
+			color:var(--text-dim);
+			min-height:34px;
+			transition:all .3s;
+		}
+		.push-status-box.sending{ border-color:var(--gold-dark); color:var(--gold); }
+		.push-status-box.success{ border-color:var(--green-ok); color:var(--green-ok); }
+		.push-status-dot{ width:7px;height:7px; border-radius:50%; background:#333; flex-shrink:0; transition:all .3s; }
+		.push-status-box.sending .push-status-dot{ background:var(--gold); box-shadow:0 0 5px var(--gold); animation:blink .5s infinite; }
+		.push-status-box.success .push-status-dot{ background:var(--green-ok); box-shadow:0 0 5px var(--green-ok); animation:blink .9s infinite; }
+
+		/* MODE SWITCH STATUS */
+		.switch-status-box{
+			margin-top:8px;
+			padding:8px 12px;
+			border-radius:6px;
+			border:1px solid #1e2a3a;
+			background:#080a10;
+			font-family:'Orbitron',sans-serif;
+			font-size:12px;
+			letter-spacing:1px;
+			color:var(--text-dim);
+			min-height:32px;
+			display:flex;
+			align-items:center;
+			gap:8px;
+			transition:all .3s;
+		}
+		.switch-status-box.active{ border-color:var(--gold-dark); color:var(--gold); }
+		.switch-status-box.done{ border-color:var(--green-ok); color:var(--green-ok); }
+		.switch-status-box.warn{ border-color:var(--orange-fault); color:var(--orange-fault); }
+
+		.restart-btn-gold{
+			border-color:var(--gold-dark) !important;
+			background:linear-gradient(180deg,#1a1200 0%,#0a0800 100%) !important;
+			color:var(--gold) !important;
+		}
+		.restart-btn-gold:hover{
+			border-color:var(--gold-light) !important;
+			box-shadow:0 0 14px rgba(255,215,0,.3) !important;
+			color:var(--gold-light) !important;
+		}
+		@keyframes restart-gold-flash{
+			0%{box-shadow:0 0 0 rgba(255,215,0,0)}
+			30%{box-shadow:0 0 30px rgba(255,215,0,.5),inset 0 0 20px rgba(255,215,0,.15)}
+			100%{box-shadow:0 0 0 rgba(255,215,0,0)}
+		}
+		.restart-btn-gold.firing{ animation:restart-gold-flash .6s ease !important; }
+
+		/* CONTACTOR PAIR STATUS — Mode 2/3 */
+		.contactor-pair{
+			display:grid;
+			grid-template-columns:1fr 1fr;
+			gap:10px;
+			margin-bottom:14px;
+		}
+		.cont-pair-box{
+			padding:10px 8px;
+			border-radius:8px;
+			border:1px solid #2a3a4a;
+			background:#0a0e18;
+			text-align:center;
+			transition:all .3s;
+		}
+		.cont-pair-box.on{
+			border-color:var(--green-ok);
+			background:#071510;
+			box-shadow:0 0 10px rgba(0,230,118,.15);
+		}
+		.cont-pair-box.off{
+			border-color:#8B0000;
+			background:#100505;
+			box-shadow:0 0 8px rgba(204,0,0,.15);
+		}
+		.cont-pair-title{
+			font-family:'Orbitron',sans-serif;
+			font-size:11px;
+			letter-spacing:2px;
+			color:var(--text-dim);
+			margin-bottom:6px;
+			text-transform:uppercase;
+		}
+		.cont-pair-dot{
+			width:18px; height:18px;
+			border-radius:50%;
+			background:#333;
+			margin:0 auto 4px;
+			transition:all .3s;
+		}
+		.cont-pair-box.on .cont-pair-dot{
+			background:var(--green-ok);
+			box-shadow:0 0 8px var(--green-ok);
+			animation:blink .9s infinite;
+		}
+		.cont-pair-box.off .cont-pair-dot{
+			background:#cc0000;
+			box-shadow:0 0 8px #cc0000;
+		}
+		.cont-pair-state{
+			font-family:'Orbitron',sans-serif;
+			font-size:14px;
+			font-weight:700;
+			letter-spacing:2px;
+		}
+		.cont-pair-box.on .cont-pair-state{ color:var(--green-ok); }
+		.cont-pair-box.off .cont-pair-state{ color:#cc0000; }
+	</style>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+</head>
+<body>
+<div class="dashboard">
+	<div class="header">
+		<div class="header-title">
+			<span class="title-gold">MONK MINER</span>
+			<span class="title-red">✕</span>
+			<span class="title-gold">HYDRO PROTECTOR</span>
+		</div>
+		<div class="header-sub"><i class="ti ti-brand-whatsapp" style="color:#25D366;"></i> +91 7678317589  |  <span class="live-dot"></span> LIVE</div>
+	</div>
+	<div class="main-grid">
+
+		<!-- PRESSURE SENSOR PANEL — 3 equal circles -->
+		<div class="panel">
+			<div class="corner-deco corner-tl"></div><div class="corner-deco corner-tr"></div>
+			<div class="corner-deco corner-bl"></div><div class="corner-deco corner-br"></div>
+			<div class="panel-title"><i class="ti ti-gauge"></i> Pressure Sensor</div>
+			<div class="three-circles">
+				<!-- Pressure gauge -->
+				<div class="circle-container">
+					<div class="esp-mode-ring" id="pressure-ring-wrap" style="width:140px;height:140px;">
+						<svg class="ring-svg" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<defs>
+								<radialGradient id="prsBgGrad" cx="40%" cy="35%" r="65%">
+									<stop id="prs-bg-stop" offset="0%" stop-color="#081808"/>
+									<stop offset="100%" stop-color="#080c14"/>
+								</radialGradient>
+								<filter id="prs-glow" x="-30%" y="-30%" width="160%" height="160%">
+									<feGaussianBlur stdDeviation="2.5" result="blur"/>
+									<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+								</filter>
+							</defs>
+							<circle cx="70" cy="70" r="62" fill="url(#prsBgGrad)"/>
+							<circle cx="70" cy="70" r="62" stroke="#1a2535" stroke-width="1" fill="none" opacity="0.6"/>
+							<circle cx="70" cy="70" r="54" stroke="#1a2535" stroke-width="7" fill="none"/>
+							<circle id="pressure-arc" cx="70" cy="70" r="54"
+								stroke="#00e676" stroke-width="7" fill="none"
+								stroke-dasharray="339" stroke-dashoffset="85"
+								stroke-linecap="round"
+								transform="rotate(-90 70 70)"
+								filter="url(#prs-glow)"/>
+							<g id="prs-ticks" opacity="0.3" stroke="#00e676" stroke-width="1.5" stroke-linecap="round">
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(0   70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(30  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(60  70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(90  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(120 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(150 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(180 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(210 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(240 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(270 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(300 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(330 70 70)"/>
+							</g>
+							<circle id="prs-arc-dot" cx="70" cy="16" r="4"
+								fill="#00e676" filter="url(#prs-glow)"
+								transform="rotate(90 70 70)"/>
+						</svg>
+						<div class="ring-inner" style="flex-direction:column;">
+							<div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,230,118,.8);line-height:1.5;" id="prs-live-txt">LIVE</div>
+							<div style="font-family:'Orbitron',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,230,118,.8);line-height:1.5;" id="prs-live-txt2">PRESSURE</div>
+							<div style="font-family:'Orbitron',sans-serif;font-size:30px;font-weight:900;line-height:1;letter-spacing:-1px;transition:color .4s,text-shadow .4s;color:#00e676;text-shadow:0 0 18px rgba(0,230,118,.7);" id="pressure-val">--</div>
+							<div style="font-size:11px;color:var(--text-dim);letter-spacing:2px;margin-top:1px;">BAR</div>
+						</div>
+					</div>
+					<div class="pressure-label" style="margin-top:8px;"><span class="live-dot"></span>Live Feed</div>
+				</div>
+
+				<!-- ESP MODE CIRCLE — SVG arc ring -->
+				<div class="circle-container">
+					<div class="esp-mode-ring m1" id="esp-mode-ring">
+						<svg class="ring-svg" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<defs>
+								<radialGradient id="espBgGrad" cx="40%" cy="35%" r="65%">
+									<stop id="esp-bg-stop" offset="0%" stop-color="#041820"/>
+									<stop offset="100%" stop-color="#080c14"/>
+								</radialGradient>
+								<filter id="arc-glow" x="-30%" y="-30%" width="160%" height="160%">
+									<feGaussianBlur stdDeviation="2.5" result="blur"/>
+									<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+								</filter>
+							</defs>
+							<!-- Dark background fill -->
+							<circle cx="70" cy="70" r="62" fill="url(#espBgGrad)"/>
+							<!-- Outer subtle border -->
+							<circle cx="70" cy="70" r="62" stroke="#1a2535" stroke-width="1" fill="none" opacity="0.6"/>
+							<!-- Track -->
+							<circle cx="70" cy="70" r="54" stroke="#1a2535" stroke-width="7" fill="none"/>
+							<!-- Glowing arc — circumference ≈339, rotate -90 so starts at top -->
+							<circle id="esp-arc" cx="70" cy="70" r="54"
+								stroke="#00d4ff" stroke-width="7" fill="none"
+								stroke-dasharray="339" stroke-dashoffset="85"
+								stroke-linecap="round"
+								transform="rotate(-90 70 70)"
+								filter="url(#arc-glow)"/>
+							<!-- Tick marks at 12 positions -->
+							<g id="esp-ticks" opacity="0.3" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round">
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(0   70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(30  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(60  70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(90  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(120 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(150 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(180 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(210 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(240 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(270 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(300 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(330 70 70)"/>
+							</g>
+							<!-- Glowing dot at arc tip -->
+							<circle id="esp-arc-dot" cx="70" cy="16" r="4"
+								fill="#00d4ff" filter="url(#arc-glow)"
+								transform="rotate(90 70 70)"/>
+						</svg>
+						<div class="ring-inner">
+							<div class="esp-running-text">RUNNING IN</div>
+							<div class="esp-running-text">MODE</div>
+							<div class="esp-mode-num" id="esp-mode-num">1</div>
+						</div>
+					</div>
+					<div class="esp-uptime" id="esp-uptime-label">UPTIME: <span class="uptime-val" id="esp-uptime-val">00:00:00</span></div>
+				</div>
+
+				<!-- System Status -->
+				<div class="circle-container">
+					<div class="status-ring" id="status-ring">
+						<svg class="ring-svg" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<defs>
+								<radialGradient id="stsBgGrad" cx="40%" cy="35%" r="65%">
+									<stop id="sts-bg-stop" offset="0%" stop-color="#081808"/>
+									<stop offset="100%" stop-color="#080c14"/>
+								</radialGradient>
+								<filter id="sts-glow" x="-30%" y="-30%" width="160%" height="160%">
+									<feGaussianBlur stdDeviation="2.5" result="blur"/>
+									<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+								</filter>
+							</defs>
+							<circle cx="70" cy="70" r="62" fill="url(#stsBgGrad)"/>
+							<circle cx="70" cy="70" r="62" stroke="#1a2535" stroke-width="1" fill="none" opacity="0.6"/>
+							<circle cx="70" cy="70" r="54" stroke="#1a2535" stroke-width="7" fill="none"/>
+							<circle id="sts-arc" cx="70" cy="70" r="54"
+								stroke="#00e676" stroke-width="7" fill="none"
+								stroke-dasharray="339" stroke-dashoffset="0"
+								stroke-linecap="round"
+								transform="rotate(-90 70 70)"
+								filter="url(#sts-glow)"/>
+							<g id="sts-ticks" opacity="0.3" stroke="#00e676" stroke-width="1.5" stroke-linecap="round">
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(0   70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(30  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(60  70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(90  70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(120 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(150 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(180 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(210 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(240 70 70)"/>
+								<line x1="70" y1="6"  x2="70" y2="14" transform="rotate(270 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(300 70 70)"/>
+								<line x1="70" y1="8"  x2="70" y2="13" transform="rotate(330 70 70)"/>
+							</g>
+							<circle id="sts-arc-dot" cx="70" cy="16" r="4"
+								fill="#00e676" filter="url(#sts-glow)"
+								transform="rotate(270 70 70)"/>
+						</svg>
+						<div class="ring-inner">
+							<div class="status-icon" id="status-icon">⚡</div>
+						</div>
+					</div>
+					<div class="esp-uptime" style="margin-top:8px;"><span class="uptime-val" id="status-sub">▲ 00:00</span></div>
+					<div class="pressure-label status-text" id="status-text" style="margin-top:4px">NORMAL</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- OPERATION MODE PANEL -->
+		<div class="panel">
+			<div class="corner-deco corner-tl"></div><div class="corner-deco corner-tr"></div>
+			<div class="corner-deco corner-bl"></div><div class="corner-deco corner-br"></div>
+			<div class="panel-title"><i class="ti ti-cpu"></i> Operation Mode</div>
+			<div class="mode-btns">
+				<button class="mode-btn active" id="btn-m1" onclick="setMode(1)">
+					<span class="mode-num">1</span>MODE
+					<div class="mode-esp-badge">● ESP RUNNING</div>
+				</button>
+				<button class="mode-btn" id="btn-m2" onclick="setMode(2)">
+					<span class="mode-num">2</span>MODE
+					<div class="mode-esp-badge">● ESP RUNNING</div>
+				</button>
+			</div>
+			<div style="margin-top:8px;font-size:13px;color:var(--text-dim);letter-spacing:1px;" id="mode-desc">AUTO PRESSURE CONTROL — MIN/MAX THRESHOLDS</div>
+
+			<!-- SWITCH BUTTON -->
+			<div id="switch-btn-wrap" style="display:none;margin-top:8px;">
+				<button id="switch-btn" style="width:100%;padding:11px 10px;border-radius:8px;
+					border:1px solid var(--gold-dark);background:linear-gradient(180deg,#1a1200,#0a0800);
+					color:var(--gold);font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:2px;
+					cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+					position:relative;overflow:hidden;user-select:none;"
+					onmousedown="startSwitchHold()" ontouchstart="startSwitchHold()"
+					onmouseup="cancelSwitchHold()" onmouseleave="cancelSwitchHold()"
+					ontouchend="cancelSwitchHold()" ontouchcancel="cancelSwitchHold()">
+					<i class="ti ti-switch-horizontal"></i>
+					<span id="switch-btn-text">SWITCH TO MODE —</span>
+					<span id="switch-hold-bar" style="position:absolute;left:0;bottom:0;height:3px;
+						width:0%;background:var(--gold-light);border-radius:0 0 8px 8px;pointer-events:none;"></span>
+				</button>
+				<div style="text-align:center;font-size:11px;color:var(--text-dim);letter-spacing:1px;margin-top:4px;" id="switch-hold-hint">HOLD 2 SEC TO SWITCH</div>
+			</div>
+
+			<!-- Confirm Modal -->
+			<div id="switch-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+				z-index:9999;align-items:center;justify-content:center;">
+				<div style="background:#0d1520;border:1px solid var(--gold-dark);border-radius:14px;
+					padding:24px 20px;max-width:300px;width:90%;text-align:center;
+					box-shadow:0 0 40px rgba(255,215,0,.15);">
+					<div style="font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:3px;
+						color:var(--gold-dark);margin-bottom:10px;">⚠ CONFIRM SWITCH</div>
+					<div id="switch-confirm-msg" style="font-size:15px;color:#c0ccd8;letter-spacing:1px;
+						margin-bottom:20px;line-height:1.6;white-space:pre-line;"></div>
+					<div style="display:flex;gap:10px;">
+						<button onclick="cancelSwitch()" style="flex:1;padding:10px;border-radius:8px;
+							border:1px solid #2a3a4a;background:#0a0e18;color:var(--text-dim);
+							font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;cursor:pointer;">CANCEL</button>
+						<button onclick="confirmSwitch()" style="flex:1;padding:10px;border-radius:8px;
+							border:1px solid var(--gold-dark);background:linear-gradient(180deg,#1a1200,#0a0800);
+							color:var(--gold);font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;cursor:pointer;">CONFIRM</button>
+					</div>
+					<div id="switch-confirm-status" style="margin-top:12px;font-family:'Orbitron',sans-serif;
+						font-size:12px;letter-spacing:1px;color:var(--text-dim);min-height:18px;"></div>
+				</div>
+			</div>
+		</div>
+
+
+
+		<!-- MODE 2 PANEL -->
+		<div class="panel panel-full" id="mode1-panel" style="display:none;">
+			<div class="corner-deco corner-tl"></div><div class="corner-deco corner-tr"></div>
+			<div class="corner-deco corner-bl"></div><div class="corner-deco corner-br"></div>
+			<div class="panel-title"><i class="ti ti-adjustments-horizontal"></i> MODE 1 CONTROL PANEL</div>
+
+			<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;"><i class="ti ti-bolt"></i> Contactor Live Status</div>
+			<div class="contactor-pair">
+				<div class="cont-pair-box off" id="m2-cont1-box">
+					<div class="cont-pair-title">CONTACTOR 1</div>
+					<div class="cont-pair-dot" id="m2-cont1-dot"></div>
+					<div class="cont-pair-state" id="m2-cont1-state">OFF</div>
+				</div>
+				<div class="cont-pair-box off" id="m2-cont2-box">
+					<div class="cont-pair-title">CONTACTOR 2</div>
+					<div class="cont-pair-dot" id="m2-cont2-dot"></div>
+					<div class="cont-pair-state" id="m2-cont2-state">OFF</div>
+				</div>
+			</div>
+
+			<div class="section-divider" style="margin-bottom:14px;"></div>
+			<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+				<div>
+					<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;">MIN PRESSURE</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjVal2('min2',-1)">−</button>
+						<div class="val-display" id="min2-val">2</div>
+						<button class="val-btn" onclick="adjVal2('min2',1)">+</button>
+					</div>
+					<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:4px;">BAR (1–10)</div>
+				</div>
+				<div>
+					<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;">MAX PRESSURE</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjVal2('max2',-1)">−</button>
+						<div class="val-display" id="max2-val">9</div>
+						<button class="val-btn" onclick="adjVal2('max2',1)">+</button>
+					</div>
+					<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:4px;">BAR (1–10)</div>
+				</div>
+			</div>
+			<div class="section-divider"></div>
+			<div class="timing-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+				<div>
+					<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;">Restart Cycle Time</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming2('m2-restart-time',-1,1,999)">−</button>
+						<div class="val-display" id="m2-restart-time" style="width:38px;">10</div>
+						<button class="val-btn" onclick="adjTiming2('m2-restart-time',1,1,999)">+</button>
+					</div>
+					<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:4px;">SEC (1–999)</div>
+				</div>
+				<div>
+					<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;">Contactor ON Pulse</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming2('m2-pulse-on',-1,0,59)">−</button>
+						<div class="val-display" id="m2-pulse-on" style="width:38px;">3</div>
+						<button class="val-btn" onclick="adjTiming2('m2-pulse-on',1,0,59)">+</button>
+					</div>
+					<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:4px;">SEC (0–59)</div>
+				</div>
+				<div>
+					<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;">Contactor OFF Pulse</div>
+					<div class="value-selector" style="justify-content:center;">
+						<button class="val-btn" onclick="adjTiming2('m2-pulse-off',-1,0,59)">−</button>
+						<div class="val-display" id="m2-pulse-off" style="width:38px;">3</div>
+						<button class="val-btn" onclick="adjTiming2('m2-pulse-off',1,0,59)">+</button>
+					</div>
+					<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:4px;">SEC (0–59)</div>
+				</div>
+			</div>
+			<div class="section-divider"></div>
+			<!-- UPDATE on top, FETCH below -->
+			<div class="esp-sync-grid">
+				<div class="esp-card update">
+					<button id="esp-update-btn-m2" onclick="espUpdateValues('m2')" class="esp-btn update"><i class="ti ti-upload"></i> UPDATE TO PROTECTOR KIT</button>
+					<div id="esp-update-status-m2" class="esp-status">READY</div>
+					<div class="esp-data-grid">
+						<div class="esp-data-row row-2">
+							<div class="upd-data-box"><div class="upd-data-label">Min Pressure</div><div id="upd-min-val-m2" class="upd-data-value">2</div><div class="upd-data-unit">BAR</div></div>
+							<div class="upd-data-box"><div class="upd-data-label">Max Pressure</div><div id="upd-max-val-m2" class="upd-data-value">9</div><div class="upd-data-unit">BAR</div></div>
+						</div>
+						<div class="esp-data-row row-3">
+							<div class="upd-data-box"><div class="upd-data-label">ON Pulse</div><div id="upd-on-val-m2" class="upd-data-value">3</div><div class="upd-data-unit">sec</div></div>
+							<div class="upd-data-box"><div class="upd-data-label">OFF Pulse</div><div id="upd-off-val-m2" class="upd-data-value">3</div><div class="upd-data-unit">sec</div></div>
+							<div class="upd-data-box"><div class="upd-data-label">Restart</div><div id="upd-restart-val-m2" class="upd-data-value">10</div><div class="upd-data-unit">sec</div></div>
+						</div>
+					</div>
+				</div>
+				<div class="esp-card fetch">
+					<button id="esp-fetch-btn-m2" onclick="espFetchValues('m2')" class="esp-btn fetch"><i class="ti ti-download"></i> FETCH VALUES FROM PROTECTOR KIT</button>
+					<div id="esp-fetch-status-m2" class="esp-status">READY</div>
+					<div class="esp-data-grid">
+						<div class="esp-data-row row-2">
+							<div class="esp-data-box"><div class="esp-data-label">Min Pressure</div><div id="fetched-min-m2" class="esp-data-value">--</div><div class="esp-data-unit">BAR</div></div>
+							<div class="esp-data-box"><div class="esp-data-label">Max Pressure</div><div id="fetched-max-m2" class="esp-data-value">--</div><div class="esp-data-unit">BAR</div></div>
+						</div>
+						<div class="esp-data-row row-3">
+							<div class="esp-data-box"><div class="esp-data-label">ON Pulse</div><div id="fetched-on-pulse-m2" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+							<div class="esp-data-box"><div class="esp-data-label">OFF Pulse</div><div id="fetched-off-pulse-m2" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+							<div class="esp-data-box"><div class="esp-data-label">Restart</div><div id="fetched-restart-m2" class="esp-data-value">--</div><div class="esp-data-unit">sec</div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="section-divider" style="margin-top:14px;"></div>
+			<button class="restart-btn" id="restart-btn-m2-real" onclick="restartESP(2)"><i class="ti ti-refresh" style="font-size:16px;"></i> RESTART MODE 1 SCRIPT</button>
+			<div style="font-size:13px;color:var(--text-dim);text-align:center;margin-top:5px;letter-spacing:1px;" id="restart-status-m2">STANDBY — READY TO RESTART</div>
+		</div>
+
+		<!-- MODE 3 PANEL -->
+		<div class="panel panel-full" id="mode2-panel" style="display:none;">
+			<div class="corner-deco corner-tl"></div><div class="corner-deco corner-tr"></div>
+			<div class="corner-deco corner-bl"></div><div class="corner-deco corner-br"></div>
+			<div class="panel-title"><i class="ti ti-circuit-switchboard"></i> Mode 2 — Relay Manual + Contactor Timers</div>
+
+			<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;"><i class="ti ti-bolt"></i> Contactor Live Status</div>
+			<div class="contactor-pair">
+				<div class="cont-pair-box off" id="m3-cont1-box">
+					<div class="cont-pair-title">CONTACTOR 1</div>
+					<div class="cont-pair-dot" id="m3-cont1-dot"></div>
+					<div class="cont-pair-state" id="m3-cont1-state">OFF</div>
+				</div>
+				<div class="cont-pair-box off" id="m3-cont2-box">
+					<div class="cont-pair-title">CONTACTOR 2</div>
+					<div class="cont-pair-dot" id="m3-cont2-dot"></div>
+					<div class="cont-pair-state" id="m3-cont2-state">OFF</div>
+				</div>
+			</div>
+
+			<div class="section-divider" style="margin-bottom:14px;"></div>
+			<div class="relay-push-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;">
+				<div class="contactor-card">
+					<div style="font-size:13px;color:var(--gold-dark);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;font-family:'Orbitron',sans-serif;">⚡ Relay 1 Push</div>
+					<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;">ON Duration</div>
+					<div class="value-selector" style="justify-content:center;margin-bottom:14px;">
+						<button class="val-btn" onclick="adjPushTime('p1',-1)">−</button>
+						<div class="val-display" id="p1-time" style="width:42px;">5</div>
+						<button class="val-btn" onclick="adjPushTime('p1',1)">+</button>
+					</div>
+					<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:-8px;margin-bottom:14px;">SEC (1–999)</div>
+					<button class="push-btn" id="push-btn-r1" onclick="pushRelay(1)">
+						<i class="ti ti-player-play" style="font-size:14px;"></i> PUSH
+					</button>
+					<div class="push-status-box" id="push-status-r1">
+						<span class="push-status-dot" id="push-dot-r1"></span>
+						<span id="push-status-text-r1">STANDBY — READY</span>
+					</div>
+				</div>
+				<div class="contactor-card">
+					<div style="font-size:13px;color:var(--gold-dark);letter-spacing:2px;margin-bottom:10px;text-transform:uppercase;font-family:'Orbitron',sans-serif;">⚡ Relay 2 Push</div>
+					<div style="font-size:13px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase;">ON Duration</div>
+					<div class="value-selector" style="justify-content:center;margin-bottom:14px;">
+						<button class="val-btn" onclick="adjPushTime('p2',-1)">−</button>
+						<div class="val-display" id="p2-time" style="width:42px;">5</div>
+						<button class="val-btn" onclick="adjPushTime('p2',1)">+</button>
+					</div>
+					<div style="text-align:center;font-size:13px;color:var(--text-dim);margin-top:-8px;margin-bottom:14px;">SEC (1–999)</div>
+					<button class="push-btn" id="push-btn-r2" onclick="pushRelay(2)">
+						<i class="ti ti-player-play" style="font-size:14px;"></i> PUSH
+					</button>
+					<div class="push-status-box" id="push-status-r2">
+						<span class="push-status-dot" id="push-dot-r2"></span>
+						<span id="push-status-text-r2">STANDBY — READY</span>
+					</div>
+				</div>
+			</div>
+			<div class="section-divider"></div>
+			<div class="relay-row relay-off" id="relay1-row">
+				<div class="relay-name"><span class="relay-timer" id="relay1-timer"><span class="watch">⏱</span><span class="sec">10</span>s</span><div class="relay-dot" id="relay1-dot"></div> <span style="color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(255,215,0,.6);">RELAY 1</span></div>
+				<div class="toggle-wrap"><span class="relay-state-txt" id="relay1-state">OFF</span><label class="toggle"><input type="checkbox" id="relay1-toggle" onchange="toggleRelay(1)"><span class="toggle-slider"></span></label></div>
+			</div>
+			<div class="relay-row relay-off" id="relay2-row">
+				<div class="relay-name"><span class="relay-timer" id="relay2-timer"><span class="watch">⏱</span><span class="sec">10</span>s</span><div class="relay-dot" id="relay2-dot"></div> <span style="color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(255,215,0,.6);">RELAY 2</span></div>
+				<div class="toggle-wrap"><span class="relay-state-txt" id="relay2-state">OFF</span><label class="toggle"><input type="checkbox" id="relay2-toggle" onchange="toggleRelay(2)"><span class="toggle-slider"></span></label></div>
+			</div>
+			<div class="relay-row relay-off" id="relay3-row">
+				<div class="relay-name"><span class="relay-timer" id="relay3-timer"><span class="watch">⏱</span><span class="sec">10</span>s</span><div class="relay-dot" id="relay3-dot"></div> <span style="color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(255,215,0,.6);">RELAY 3</span></div>
+				<div class="toggle-wrap"><span class="relay-state-txt" id="relay3-state">OFF</span><label class="toggle"><input type="checkbox" id="relay3-toggle" onchange="toggleRelay(3)"><span class="toggle-slider"></span></label></div>
+			</div>
+			<div class="relay-row relay-off" id="relay4-row">
+				<div class="relay-name"><span class="relay-timer" id="relay4-timer"><span class="watch">⏱</span><span class="sec">10</span>s</span><div class="relay-dot" id="relay4-dot"></div> <span style="color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(255,215,0,.6);">RELAY 4</span></div>
+				<div class="toggle-wrap"><span class="relay-state-txt" id="relay4-state">OFF</span><label class="toggle"><input type="checkbox" id="relay4-toggle" onchange="toggleRelay(4)"><span class="toggle-slider"></span></label></div>
+			</div>
+			<div class="section-divider"></div>
+			<button class="restart-btn" id="restart-btn-m3" onclick="restartESP(3)"><i class="ti ti-refresh" style="font-size:16px;"></i> RESTART MODE 2 SCRIPT</button>
+			<div style="font-size:13px;color:var(--text-dim);text-align:center;margin-top:5px;letter-spacing:1px;" id="restart-status-m3">STANDBY — READY TO RESTART</div>
+		</div>
+	</div>
+	<div class="footer-bar">
+		<div class="footer-text">MONK MINER × HYDRO PROTECTOR  |  ALL RIGHTS RESERVED</div>
+		<div class="footer-live"><span class="live-dot"></span> LIVE</div>
+	</div>
+</div>
+<script>
+let currentMode = 1;
+let espMode = 1;
+let pressureVal = 5;
+let minPressure = 3, maxPressure = 8;
+let minPressure2 = 2, maxPressure2 = 9;
+let relayStates = {1: false, 2: false, 3: false, 4: false};
+let relayTimers = {1: 0, 2: 0, 3: 0, 4: 0};
+let pushTimes = {p1: 5, p2: 5};
+let pushBusy = {1: false, 2: false};
+let switchBusy = false;
+let uptimeSeconds = 0;
+let contactorState = { 1: false, 2: false };
+
+setInterval(() => {
+	uptimeSeconds++;
+	const h = String(Math.floor(uptimeSeconds / 3600)).padStart(2,'0');
+	const m = String(Math.floor((uptimeSeconds % 3600) / 60)).padStart(2,'0');
+	const s = String(uptimeSeconds % 60).padStart(2,'0');
+	document.getElementById('esp-uptime-val').textContent = h + ':' + m + ':' + s;
+}, 1000);
+
+// Mode color palette
+// normalColor = circle color when pressure in range (or mode 3 bypass)
+// faultColor  = circle color when pressure out of range
+const MODE_COLORS = {
+	1: { normal:'#FFD700', normalBg:'#1a1200', fault:'#FF2020', faultBg:'#1a0404' },
+	2: { normal:'#FFD700', normalBg:'#1a1200', fault:'#FF2020', faultBg:'#1a0404' },
+	3: { normal:'#FFD700', normalBg:'#1a1200', fault:'#FF2020', faultBg:'#1a0404' },
+};
+
+function updateEspModeRing(mode) {
+	espMode = mode;
+	const ring   = document.getElementById('esp-mode-ring');
+	const num    = document.getElementById('esp-mode-num');
+	const arc    = document.getElementById('esp-arc');
+	const dot    = document.getElementById('esp-arc-dot');
+	const ticks  = document.getElementById('esp-ticks');
+	const bgStop = document.getElementById('esp-bg-stop');
+
+	ring.className = 'esp-mode-ring m' + mode;
+	num.textContent = mode;
+
+	// Use normalColor for the ESP mode ring arc (it shows which mode is running)
+	const mc = MODE_COLORS[mode];
+	const c = mc.normal;
+	const cfg = {
+		1: { bg: mc.normalBg, offset: 85,  dotRot: 90  },
+		2: { bg: mc.normalBg, offset: 0,   dotRot: 270 },
+		3: { bg: mc.normalBg, offset: 170, dotRot: 180 },
+	}[mode];
+
+	arc.setAttribute('stroke', c);
+	arc.setAttribute('stroke-dashoffset', cfg.offset);
+	dot.setAttribute('fill', c);
+	dot.setAttribute('transform', `rotate(${cfg.dotRot} 70 70)`);
+	ticks.setAttribute('stroke', c);
+	bgStop.setAttribute('stop-color', cfg.bg);
+
+	// Update mode num text color to match
+	num.style.color = c;
+	num.style.textShadow = `0 0 18px ${c}bb, 0 0 40px ${c}44`;
+	document.querySelectorAll('.esp-running-text').forEach(el => el.style.color = c + 'cc');
+	ring.style.setProperty('--spark-color', c);
+
+	document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('esp-running'));
+	document.getElementById('btn-m' + mode).classList.add('esp-running');
+	refreshSwitchBtn();
+}
+
+function setMode(m) {
+	currentMode = m;
+	document.querySelectorAll('[id$="-panel"]').forEach(p => p.style.display = 'none');
+	document.getElementById('mode' + m + '-panel').style.display = 'block';
+	document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+	document.getElementById('btn-m' + m).classList.add('active');
+	const descs = [
+		'AUTO PRESSURE CONTROL — MIN/MAX THRESHOLDS',
+		'FEEDBACK-BASED CONTACTOR CONTROL — WITH RETRY',
+		'RELAY MANUAL CONTROL — MONITORING OFF'
+	];
+	document.getElementById('mode-desc').textContent = descs[m - 1];
+	refreshSwitchBtn();
+}
+
+/* ── SWITCH BUTTON ─────────────────────────── */
+let switchHoldRaf = null, switchHoldStart = null;
+const SWITCH_HOLD_MS = 2000;
+
+function refreshSwitchBtn() {
+	const wrap = document.getElementById('switch-btn-wrap');
+	if (!wrap) return;
+	if (currentMode !== espMode) {
+		wrap.style.display = 'block';
+		document.getElementById('switch-btn-text').textContent = 'SWITCH TO MODE ' + currentMode;
+	} else {
+		wrap.style.display = 'none';
+		cancelSwitchHold();
+	}
+}
+function startSwitchHold() {
+	if (currentMode === espMode) return;
+	cancelSwitchHold();
+	switchHoldStart = Date.now();
+	const bar = document.getElementById('switch-hold-bar');
+	document.getElementById('switch-hold-hint').textContent = 'KEEP HOLDING…';
+	bar.style.transition = 'none'; bar.style.width = '0%';
+	(function tick() {
+		const pct = Math.min(100, ((Date.now()-switchHoldStart)/SWITCH_HOLD_MS)*100);
+		bar.style.width = pct + '%';
+		if (pct < 100) switchHoldRaf = requestAnimationFrame(tick);
+		else { bar.style.width='0%'; document.getElementById('switch-hold-hint').textContent='HOLD 2 SEC TO SWITCH'; showSwitchConfirm(); }
+	})();
+}
+function cancelSwitchHold() {
+	if (switchHoldRaf) { cancelAnimationFrame(switchHoldRaf); switchHoldRaf = null; }
+	const bar = document.getElementById('switch-hold-bar');
+	const hint = document.getElementById('switch-hold-hint');
+	if (bar) { bar.style.transition='none'; bar.style.width='0%'; }
+	if (hint) hint.textContent = 'HOLD 2 SEC TO SWITCH';
+	switchHoldStart = null;
+}
+function showSwitchConfirm() {
+	document.getElementById('switch-confirm-msg').textContent = 'Switch ESP from Mode '+espMode+' → Mode '+currentMode+'?\nESP will restart in the new mode.';
+	document.getElementById('switch-confirm-status').textContent = '';
+	document.getElementById('switch-confirm-overlay').style.display = 'flex';
+}
+function cancelSwitch() { document.getElementById('switch-confirm-overlay').style.display = 'none'; }
+function confirmSwitch() {
+	const s = document.getElementById('switch-confirm-status');
+	s.style.color='var(--gold)'; s.textContent='▶ SENDING COMMAND TO ESP…';
+	const t = currentMode;
+	setTimeout(()=>{ s.style.color='var(--green-ok)'; s.textContent='✔ ESP ACK — SWITCHING TO MODE '+t;
+		setTimeout(()=>{ document.getElementById('switch-confirm-overlay').style.display='none'; updateEspModeRing(t); }, 1200);
+	}, 1000);
+}
+
+function adjVal(type, delta) {
+	if (type === 'min') {
+		minPressure = Math.max(1, Math.min(10, minPressure + delta));
+		document.getElementById('min-val').textContent = minPressure;
+	} else {
+		maxPressure = Math.max(1, Math.min(10, maxPressure + delta));
+		document.getElementById('max-val').textContent = maxPressure;
+	}
+	refreshUpdatePreview();
+}
+
+function adjVal2(type, delta) {
+	if (type === 'min2') {
+		minPressure2 = Math.max(1, Math.min(10, minPressure2 + delta));
+		document.getElementById('min2-val').textContent = minPressure2;
+	} else {
+		maxPressure2 = Math.max(1, Math.min(10, maxPressure2 + delta));
+		document.getElementById('max2-val').textContent = maxPressure2;
+	}
+	refreshM2Preview();
+}
+
+function adjTiming(id, delta, mn, mx) {
+	const el = document.getElementById(id);
+	let val = parseInt(el.textContent) || 0;
+	val = Math.max(mn, Math.min(mx, val + delta));
+	el.textContent = val;
+	refreshUpdatePreview();
+}
+
+function adjTiming2(id, delta, mn, mx) {
+	const el = document.getElementById(id);
+	let val = parseInt(el.textContent) || 0;
+	val = Math.max(mn, Math.min(mx, val + delta));
+	el.textContent = val;
+	refreshM2Preview();
+}
+
+function adjPushTime(id, delta) {
+	const el = document.getElementById(id + '-time');
+	let val = parseInt(el.textContent) || 1;
+	val = Math.max(1, Math.min(999, val + delta));
+	el.textContent = val;
+	pushTimes[id] = val;
+}
+
+function pushRelay(num) {
+	if (pushBusy[num]) return;
+	pushBusy[num] = true;
+	const pid = 'p' + num;
+	const sec = pushTimes[pid];
+	const btn = document.getElementById('push-btn-r' + num);
+	const box = document.getElementById('push-status-r' + num);
+	const txt = document.getElementById('push-status-text-r' + num);
+	btn.disabled = true;
+	btn.classList.add('firing');
+	box.className = 'push-status-box sending';
+	txt.textContent = '▶ CMD SENT — RELAY ' + num + ' ON FOR ' + sec + 's';
+	setTimeout(() => {
+		btn.classList.remove('firing');
+		setTimeout(() => {
+			box.className = 'push-status-box success';
+			txt.textContent = '✔ ESP ACK — RELAY ' + num + ' EXECUTING ' + sec + 's PULSE';
+			setTimeout(() => {
+				box.className = 'push-status-box';
+				txt.textContent = 'STANDBY — READY';
+				btn.disabled = false;
+				pushBusy[num] = false;
+			}, (sec * 1000) + 1000);
+		}, 1200);
+	}, 300);
+}
+
+function toggleRelay(num) {
+	const toggle = document.getElementById('relay' + num + '-toggle');
+	const row = document.getElementById('relay' + num + '-row');
+	const state = document.getElementById('relay' + num + '-state');
+	const dot = document.getElementById('relay' + num + '-dot');
+	const timer = document.getElementById('relay' + num + '-timer');
+	relayStates[num] = toggle.checked;
+	if (toggle.checked) {
+		row.classList.add('relay-on'); row.classList.remove('relay-off');
+		state.textContent = 'ON'; dot.style.background = 'var(--green-ok)';
+		dot.style.boxShadow = '0 0 6px var(--green-ok)';
+		relayTimers[num] = 10;
+		timer.classList.add('show', 'on'); timer.classList.remove('off');
+	} else {
+		row.classList.remove('relay-on'); row.classList.add('relay-off');
+		state.textContent = 'OFF'; dot.style.background = '#333';
+		dot.style.boxShadow = 'none';
+		relayTimers[num] = 10;
+		timer.classList.add('show', 'off'); timer.classList.remove('on');
+		const secEl = timer.querySelector('.sec');
+		if (secEl) secEl.textContent = 10;
+	}
+}
+
+function restartESP(mode) {
+	const btnId = mode === 2 ? 'restart-btn-m2-real' : 'restart-btn-m' + mode;
+	const btn = document.getElementById(btnId);
+	const status = document.getElementById('restart-status-m' + mode);
+	btn.classList.add('firing');
+	status.textContent = 'RESTARTING...';
+	setTimeout(() => {
+		btn.classList.remove('firing');
+		status.textContent = 'RESTART COMPLETE';
+		uptimeSeconds = 0;
+		setTimeout(() => { status.textContent = 'STANDBY — READY TO RESTART'; }, 2000);
+	}, 600);
+}
+
+function espFetchValues(mode = '') {
+	const btnId = mode ? 'esp-fetch-btn-' + mode : 'esp-fetch-btn';
+	const statusId = mode ? 'esp-fetch-status-' + mode : 'esp-fetch-status';
+	const btn = document.getElementById(btnId);
+	const status = document.getElementById(statusId);
+	btn.disabled = true;
+	status.textContent = 'FETCHING...';
+	setTimeout(() => {
+		if (mode === 'm2') {
+			document.getElementById('fetched-min-m2').textContent = minPressure2;
+			document.getElementById('fetched-max-m2').textContent = maxPressure2;
+			document.getElementById('fetched-on-pulse-m2').textContent = document.getElementById('m2-pulse-on').textContent;
+			document.getElementById('fetched-off-pulse-m2').textContent = document.getElementById('m2-pulse-off').textContent;
+			document.getElementById('fetched-restart-m2').textContent = document.getElementById('m2-restart-time').textContent;
+		}
+		status.textContent = 'FETCH OK';
+		btn.disabled = false;
+		setTimeout(() => { status.textContent = 'READY'; }, 2000);
+	}, 1500);
+}
+
+function espUpdateValues(mode = '') {
+	const btnId = mode ? 'esp-update-btn-' + mode : 'esp-update-btn';
+	const statusId = mode ? 'esp-update-status-' + mode : 'esp-update-status';
+	const btn = document.getElementById(btnId);
+	const status = document.getElementById(statusId);
+	btn.disabled = true;
+	status.textContent = 'UPDATING...';
+	setTimeout(() => {
+		status.textContent = 'UPDATE OK';
+		btn.disabled = false;
+		setTimeout(() => { status.textContent = 'READY'; }, 2000);
+	}, 1500);
+}
+
+function refreshUpdatePreview() { /* Mode 1 removed */ }
+
+function refreshM2Preview() {
+	const onPulse = document.getElementById('m2-pulse-on').textContent;
+	const offPulse = document.getElementById('m2-pulse-off').textContent;
+	const restartTime = document.getElementById('m2-restart-time').textContent;
+	document.getElementById('upd-min-val-m2').textContent = minPressure2;
+	document.getElementById('upd-max-val-m2').textContent = maxPressure2;
+	document.getElementById('upd-on-val-m2').textContent = onPulse;
+	document.getElementById('upd-off-val-m2').textContent = offPulse;
+	document.getElementById('upd-restart-val-m2').textContent = restartTime;
+}
+
+let normalSeconds = 0;
+let wasNormal = true;
+
+function applyCircleColors(normalColor, normalBg, faultColor, faultBg, isNormal, statusText, statusIcon) {
+	const mc = MODE_COLORS[espMode];
+	const activeColor = isNormal ? normalColor : faultColor;
+	const activeBg    = isNormal ? normalBg    : faultBg;
+
+	// ── Pressure circle ──
+	const pArc    = document.getElementById('pressure-arc');
+	const pDot    = document.getElementById('prs-arc-dot');
+	const pTicks  = document.getElementById('prs-ticks');
+	const pBgStop = document.getElementById('prs-bg-stop');
+	const pValEl  = document.getElementById('pressure-val');
+	const pLive1  = document.getElementById('prs-live-txt');
+	const pLive2  = document.getElementById('prs-live-txt2');
+	pArc.setAttribute('stroke', activeColor);
+	pDot.setAttribute('fill', activeColor);
+	pTicks.setAttribute('stroke', activeColor);
+	pBgStop.setAttribute('stop-color', activeBg);
+	pValEl.style.color = activeColor;
+	pValEl.style.textShadow = `0 0 18px ${activeColor}99, 0 0 40px ${activeColor}44`;
+	if (pLive1) { pLive1.style.color = activeColor + 'cc'; }
+	if (pLive2) { pLive2.style.color = activeColor + 'cc'; }
+	const pRing = document.getElementById('pressure-ring-wrap');
+	if (pRing) pRing.style.setProperty('--spark-color', activeColor);
+
+	// ── Status circle ──
+	const stsArc    = document.getElementById('sts-arc');
+	const stsDot    = document.getElementById('sts-arc-dot');
+	const stsTicks  = document.getElementById('sts-ticks');
+	const stsBgStop = document.getElementById('sts-bg-stop');
+	const stsTxt    = document.getElementById('status-text');
+	const stsIcon   = document.getElementById('status-icon');
+	stsArc.setAttribute('stroke', activeColor);
+	stsDot.setAttribute('fill', activeColor);
+	stsTicks.setAttribute('stroke', activeColor);
+	stsBgStop.setAttribute('stop-color', activeBg);
+	stsTxt.textContent = statusText;
+	stsTxt.style.color = activeColor;
+	stsTxt.style.textShadow = `0 0 18px ${activeColor}bb, 0 0 40px ${activeColor}44`;
+	if (stsIcon) {
+		stsIcon.textContent = statusIcon;
+		stsIcon.style.color = activeColor;
+		stsIcon.style.textShadow = `0 0 10px ${activeColor}e6, 0 0 22px ${activeColor}99`;
+	}
+	const stsRing = document.getElementById('status-ring');
+	if (stsRing) stsRing.style.setProperty('--spark-color', activeColor);
+
+	// uptime / sub label
+	const subEl = document.getElementById('status-sub');
+	subEl.style.color = activeColor;
+}
+
+setInterval(() => {
+	pressureVal += (Math.random() - 0.5) * 0.5;
+	pressureVal = Math.max(0, Math.min(10, pressureVal));
+	const pValEl = document.getElementById('pressure-val');
+	pValEl.textContent = pressureVal.toFixed(1);
+
+	// Pressure arc fill based on value 0–10, circumference 339
+	const pOffset = 339 - (pressureVal / 10) * 339;
+	const pArc = document.getElementById('pressure-arc');
+	const pDot = document.getElementById('prs-arc-dot');
+	pArc.setAttribute('stroke-dashoffset', pOffset);
+	const pDotRot = (pressureVal / 10) * 360 - 90;
+	pDot.setAttribute('transform', `rotate(${pDotRot} 70 70)`);
+
+	const mc = MODE_COLORS[espMode];
+	const activeMin = (espMode === 2) ? minPressure2 : minPressure;
+	const activeMax = (espMode === 2) ? maxPressure2 : maxPressure;
+	let isNormal = false;
+	let statusText, statusIcon;
+
+	if (espMode === 3) {
+		// Mode 3 — bypass, all orange regardless
+		statusText = 'BYPASS'; statusIcon = '🔓';
+		normalSeconds = 0; wasNormal = false;
+		applyCircleColors(mc.normal, mc.normalBg, mc.fault, mc.faultBg, true, statusText, statusIcon);
+		document.getElementById('status-sub').textContent = 'MONITOR OFF';
+	} else if (pressureVal < activeMin || pressureVal > activeMax) {
+		// FAULT — red
+		statusText = 'FAULT'; statusIcon = '⚠️';
+		normalSeconds = 0; wasNormal = false;
+		applyCircleColors(mc.normal, mc.normalBg, mc.fault, mc.faultBg, false, statusText, statusIcon);
+		document.getElementById('status-sub').textContent = 'OUT OF RANGE';
+	} else {
+		// NORMAL
+		statusText = 'NORMAL'; statusIcon = '⚡';
+		isNormal = true;
+		if (!wasNormal) { normalSeconds = 0; }
+		wasNormal = true;
+		applyCircleColors(mc.normal, mc.normalBg, mc.fault, mc.faultBg, true, statusText, statusIcon);
+	}
+
+	if (isNormal) {
+		normalSeconds += 2;
+		const h = Math.floor(normalSeconds / 3600);
+		const m = Math.floor((normalSeconds % 3600) / 60);
+		const s = normalSeconds % 60;
+		const fmt = h > 0
+			? `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+			: `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+		document.getElementById('status-sub').textContent = '▲ ' + fmt;
+	}
+}, 2000);
+
+setInterval(() => {
+	for (let i = 1; i <= 4; i++) {
+		if (relayTimers[i] > 0) {
+			relayTimers[i]--;
+			const timerEl = document.querySelector('#relay' + i + '-timer .sec');
+			if (timerEl) timerEl.textContent = relayTimers[i];
+			if (relayTimers[i] === 0) {
+				const timerBadge = document.getElementById('relay' + i + '-timer');
+				timerBadge.classList.remove('show');
+				const toggle = document.getElementById('relay' + i + '-toggle');
+				if (toggle.checked) {
+					toggle.checked = false;
+					const row = document.getElementById('relay' + i + '-row');
+					const state = document.getElementById('relay' + i + '-state');
+					const dot = document.getElementById('relay' + i + '-dot');
+					row.classList.remove('relay-on'); row.classList.add('relay-off');
+					state.textContent = 'OFF'; dot.style.background = '#333';
+					dot.style.boxShadow = 'none';
+					relayStates[i] = false;
+				}
+			}
+		}
+	}
+}, 1000);
+
+setInterval(() => {
+	if (espMode === 2) {
+		const inRange = (pressureVal >= minPressure2 && pressureVal <= maxPressure2);
+		const c1 = inRange;
+		const c2 = inRange;
+		setContactorDisplay(2, 1, c1);
+		setContactorDisplay(2, 2, c2);
+		contactorState[1] = c1;
+		contactorState[2] = c2;
+	}
+}, 3000);
+
+function setContactorDisplay(panel, num, on) {
+	const box = document.getElementById('m' + panel + '-cont' + num + '-box');
+	const state = document.getElementById('m' + panel + '-cont' + num + '-state');
+	if (!box) return;
+	box.className = 'cont-pair-box ' + (on ? 'on' : 'off');
+	state.textContent = on ? 'ON' : 'OFF';
+}
+
+updateEspModeRing(1);
+setMode(1);
+refreshM2Preview();
+</script>
+</body>
+</html>
